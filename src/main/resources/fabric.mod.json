@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "tubular",
+  "version": "${version}",
+
+  "name": "Tubular",
+  "description": "Routes at your disposal.",
+  "authors": [
+    "vini2003"
+  ],
+  "contact": {
+    "sources": "https://github.com/vini2003/Pipes"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "tubular.TubularMod"
+    ],
+    "client": [
+      "tubular.TubularModClient"
+    ]
+  },
+  "mixins": [
+    "tubular.mixin.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.4.0",
+    "fabric": "*",
+    "libgui": ">=1.2.0"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}
