@@ -5,22 +5,22 @@ import java.util.Collections;
 import java.util.List;
 
 import blue.endless.jankson.annotation.Nullable;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.inventory.BasicInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Tickable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.IWorld;
+
 import tubular.inventory.InventoryHandler;
 import tubular.inventory.InventoryHolder;
 import tubular.network.NetworkHandler;
@@ -35,7 +35,7 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
 
     public Boolean initialUpdate = false;
 
-    public Item filterItem;
+    public NetworkHolder networkHolder;
 
     public List<InventoryHolder> inputInventories = new ArrayList<>();
     public List<InventoryHolder> outputInventories = new ArrayList<>();
@@ -46,9 +46,9 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
 
     public List<Tuple<Direction, BlockMode>> connectorModes = new ArrayList<>();
 
-    public NetworkHolder networkHolder;
-
     public ConnectorInventory blockInventory = new ConnectorInventory();
+
+    private ServerWorld serverWorld;
 
     public BlockTubeConnectorEntity() {
         super(EntityRegistry.TUBE_CONNECTOR_ENTITY);
@@ -78,11 +78,6 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
     //}
 
     class ConnectorInventory extends BasicInventory implements SidedInventory {
-        private BlockState state;
-        private IWorld world;
-        private BlockPos position;
-        private boolean dirty;
-
         public ConnectorInventory() {
             super(6);
         }
@@ -152,11 +147,19 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
     }
 
     public void setMode(Direction direction, BlockMode mode) {
-        for (Tuple<Direction, BlockMode> tuple : connectorModes) {
+        for (Tuple<Direction, BlockMode> tuple : this.connectorModes) {
             if (tuple.getFirst() == direction) {
                 tuple.setSecond(mode);
             }
         }
+    }
+
+    public ServerWorld getServerWorld() {
+        return this.serverWorld;
+    }
+
+    public void setServerWorld(ServerWorld world) {
+        this.serverWorld = world;
     }
 
     public void clear() {
@@ -201,13 +204,17 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
             this.connectorModes.add(new Tuple<>(Direction.DOWN,  BlockMode.NONE));
         }
 
+        if (this.world.isClient()) {
+            return;
+        }
+
         for (Tuple<Direction, BlockMode> tuple : this.connectorModes) {
-            if (tuple.getSecond() == BlockMode.REQUESTER && ticksRemaining <= 0) {
+            if (tuple.getSecond() == BlockMode.REQUESTER && ticksRemaining <= 0 && !this.world.isClient) {
                 this.ticksRemaining = ticksBase;
                 this.inputInventories.clear();
                 this.outputInventories.clear();
                 inputInventories = InventoryHandler.getInput(networkHolder, world, true);
-                outputInventories = InventoryHandler.getOutput(this.getPos(), world, true); // -252 -161
+                outputInventories = InventoryHandler.getOutput(this.getPos(), world, true);
                 if (outputInventories != null && inputInventories != null) {
                     Collections.shuffle(inputInventories);
                     Collections.shuffle(outputInventories);
@@ -219,8 +226,8 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
                                 for (Integer inputSlot : availableInputSlots) {
                                     if (InventoryHandler.canExtract(inputInventory.getInventory(), inputSlot, this.getFilter(tuple.getFirst())) && !this.getWildcard(tuple.getFirst())) {
                                         for (Integer outputSlot : availableOutputSlots) {
-                                            if (InventoryHandler.canInsert(outputInventory.getInventory(), outputSlot, filterItem)) {
-                                                InventoryHandler.makeTransfer(inputInventory.getInventory(), outputInventory.getInventory(), inputSlot, outputSlot, filterItem, outputInventory.getInventory().getInvStack(outputSlot).isEmpty());
+                                            if (InventoryHandler.canInsert(outputInventory.getInventory(), outputSlot, getFilter(inputInventory.getAccessDirection().getOpposite()))) {
+                                                InventoryHandler.makeTransfer(inputInventory.getInventory(), outputInventory.getInventory(), inputSlot, outputSlot, getFilter(inputInventory.getAccessDirection().getOpposite()), outputInventory.getInventory().getInvStack(outputSlot).isEmpty());
                                                 return;
                                             }
                                         }

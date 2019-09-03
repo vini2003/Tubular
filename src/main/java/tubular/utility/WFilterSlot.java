@@ -5,7 +5,6 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Direction;
 import tubular.entity.BlockTubeConnectorEntity;
-import tubular.screen.BlockConnectorScreenController;
 
 public class WFilterSlot extends WItemSlot {
     final Direction direction;
@@ -25,10 +24,11 @@ public class WFilterSlot extends WItemSlot {
         super.onClick(x, y, button);
         if (inventory.getInvStack(slot).isEmpty()) {
             entity.setFilter(direction, Items.AIR);
+            entity.setWildcard(direction, false);
         } else {
             entity.setFilter(direction, inventory.getInvStack(slot).getItem());
+            entity.setWildcard(direction, true);
         }
-        BlockConnectorScreenController.updateWildcards(entity);
     }
     
     public Boolean isEmpty() {

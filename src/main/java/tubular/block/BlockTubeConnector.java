@@ -8,7 +8,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockRenderLayer;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.InventoryProvider;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.LivingEntity;
@@ -26,12 +25,11 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
+
 import tubular.entity.BlockTubeConnectorEntity;
 import tubular.model.ModelHandler;
 import tubular.utility.BlockAction;
-import tubular.utility.BlockMode;
 import tubular.utility.BlockType;
-import tubular.utility.MixinInformation;
 import tubular.utility.Tuple;
 
 public class BlockTubeConnector extends BlockBase implements BlockEntityProvider {
@@ -127,31 +125,6 @@ public class BlockTubeConnector extends BlockBase implements BlockEntityProvider
         } else {
             return false;
         }
-        //if (playerEntity.getMainHandStack().isEmpty() && !playerEntity.isSneaking()) {
-        //    switch (((BlockTubeConnectorEntity)world.getBlockEntity(blockPosition)).mode) {
-        //        case PROVIDER: 
-        //            blockEntity.mode = BlockMode.REQUESTER;
-        //            MixinInformation.setMode(BlockMode.REQUESTER);
-        //            MixinInformation.setTicks(100);
-        //            break;
-        //        case REQUESTER:
-        //            blockEntity.mode = BlockMode.PROVIDER;   
-        //            MixinInformation.setMode(BlockMode.PROVIDER);
-        //            MixinInformation.setTicks(100);
-        //            break;
-        //    }
-        //}
-        //else if (playerEntity.getMainHandStack().isEmpty() && playerEntity.isSneaking()) {
-        //    ((BlockTubeConnectorEntity)world.getBlockEntity(blockPosition)).wildcard = !((BlockTubeConnectorEntity)world.getBlockEntity(blockPosition)).wildcard;   
-        //    MixinInformation.setWildcard(blockEntity.wildcard);
-        //    MixinInformation.setTicks(100);
-        //}
-        //else if (!playerEntity.getMainHandStack().isEmpty() && !playerEntity.isSneaking()) {
-        //    if (blockEntity instanceof BlockTubeConnectorEntity) {
-        //        blockEntity.filterItem = playerEntity.getMainHandStack().getItem();
-        //        blockEntity.markDirty();
-        //    }
-        //}
         if (!world.isClient) {
             if (blockEntity != null && blockEntity.getClass() == BlockTubeConnectorEntity.class) {
                 ContainerProviderRegistry.INSTANCE.openContainer(new Identifier("tubular", "tube_connector"), playerEntity, (buffer)->{
