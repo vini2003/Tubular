@@ -25,8 +25,11 @@ import tubular.utility.BlockMode;
 import tubular.utility.Tuple;
 
 public class InventoryHandler {
-    public static List<InventoryHolder> getInput(NetworkHolder networkHolder, World world, Boolean connectorMode) {
+    public static List<InventoryHolder> getInput(NetworkHolder networkHolder, BlockPos position, World world, Boolean connectorMode) {
         List<InventoryHolder> inputList = new ArrayList<>();
+        List<BlockPos> scanPositions = new ArrayList<>();
+        scanPositions = networkHolder.connectorList;
+        scanPositions.add(position);
         for (BlockPos blockPosition : networkHolder.connectorList) {
             BlockEntity blockEntityTemporary = world.getBlockEntity(blockPosition);
             BlockTubeConnectorEntity blockEntity = null;
@@ -54,7 +57,7 @@ public class InventoryHandler {
             return null;
         }
         for (Tuple<Direction, BlockMode> tuple : blockEntity.connectorModes) {
-            if (hasInventoryData(world, blockPosition.offset(tuple.getFirst()))) {
+            if (tuple.getSecond() == BlockMode.REQUESTER && hasInventoryData(world, blockPosition.offset(tuple.getFirst()))) {
                 inputList.add(getInventoryData(world, blockPosition.offset(tuple.getFirst()), tuple.getFirst().getOpposite()));
             }
         }

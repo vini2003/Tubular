@@ -32,16 +32,50 @@ public enum BlockMode implements StringIdentifiable {
         }
     }
 
+    public static BlockMode fromBoolean(Boolean bool) {
+        if (bool) {
+            return REQUESTER;
+        } else {
+            return PROVIDER;
+        }
+    }
+
+    public static BlockMode fromInteger(Integer integer) {
+        switch (integer) {
+            case 0:
+                return NONE;
+            case 1:
+                return PROVIDER;
+            case 2:
+                return REQUESTER;
+            default:
+                return NONE;
+        }
+    }
+
+    public static Integer toInteger(BlockMode mode) {
+        switch (mode) {
+            case NONE:
+                return 0;
+            case PROVIDER:
+                return 1;
+            case REQUESTER:
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
     public BlockMode getOpposite() {
         switch (this) {
             case REQUESTER:
-                return PROVIDER;
+                return NONE;
             case PROVIDER:
                 return REQUESTER;
             case NONE:
                 return PROVIDER;
             default:
-                return PROVIDER;
+                return NONE;
         }
     }
 }
