@@ -5,7 +5,6 @@ import net.minecraft.block.Material;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-
 import tubular.block.BlockTube;
 import tubular.block.BlockTubeConnector;
 

@@ -7,7 +7,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
-
 import tubular.entity.BlockTubeConnectorEntity;
 import tubular.registry.BlockRegistry;
 import tubular.registry.EntityRegistry;

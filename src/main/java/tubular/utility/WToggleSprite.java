@@ -29,33 +29,53 @@ public class WToggleSprite extends WSprite {
         super(image);
     }
 
-    @Override
-	public WSprite setImage(Identifier image) {
-        super.setImage(image);
-		return this;
-	}
-
     public Identifier getImage() {
         return this.frames[0];
+    }
+
+    public static Identifier getIdentifier(BlockMode mode, Boolean hovered) {
+        if (hovered) {
+            switch(mode) {
+                case REQUESTER:
+                    return WToggleSprite.imageHoveredRequester;
+                case PROVIDER:
+                    return WToggleSprite.imageHoveredProvider;
+                case NONE:
+                    return WToggleSprite.imageHoveredNone;
+                default:
+                    return null;
+            }   
+        } else {
+            switch(mode) {
+                case REQUESTER:
+                    return WToggleSprite.imageRequester;
+                case PROVIDER:
+                    return WToggleSprite.imageProvider;
+                case NONE:
+                    return WToggleSprite.imageNone;
+                default:
+                    return null;
+            }    
+        }
     }
 
 	public void paintBackground(int x, int y, int mouseX, int mouseY) {
         super.paintBackground(x, y, mouseX, mouseY);
         if (mouseX>=0 && mouseY>=0 && mouseX<getWidth() && mouseY<getHeight()) {
             if (this.getImage() == imageNone) {
-                this.setImage(imageHoveredNone);
+                this.setImage(getIdentifier(BlockMode.NONE, true));
             } else if (this.getImage() == imageRequester) {
-                this.setImage(imageHoveredRequester);
+                this.setImage(getIdentifier(BlockMode.REQUESTER, true));
             } else if (this.getImage() == imageProvider) {
-                this.setImage(imageHoveredProvider);
+                this.setImage(getIdentifier(BlockMode.PROVIDER, true));
             }
         } else {
             if (this.getImage() == imageHoveredNone) {
-                this.setImage(imageNone);
+                this.setImage(getIdentifier(BlockMode.NONE, false));
             } else if (this.getImage() == imageHoveredRequester) {
-                this.setImage(imageRequester);
+                this.setImage(getIdentifier(BlockMode.REQUESTER, false));
             } else if (this.getImage() == imageHoveredProvider) {
-                this.setImage(imageProvider);
+                this.setImage(getIdentifier(BlockMode.PROVIDER, false));
             }
         }
     }

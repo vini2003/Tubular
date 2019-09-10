@@ -3,7 +3,6 @@
     "package": "tubular.mixin",
     "compatibilityLevel": "JAVA_8",
     "mixins": [
-      "MixinInGameHud"
     ],
     "injectors": {
       "defaultRequire": 1

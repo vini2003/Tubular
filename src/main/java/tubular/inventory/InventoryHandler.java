@@ -18,7 +18,6 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-
 import tubular.entity.BlockTubeConnectorEntity;
 import tubular.network.NetworkHolder;
 import tubular.utility.BlockMode;

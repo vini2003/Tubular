@@ -25,7 +25,6 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-
 import tubular.entity.BlockTubeConnectorEntity;
 import tubular.model.ModelHandler;
 import tubular.utility.BlockAction;
@@ -103,7 +102,13 @@ public class BlockTubeConnector extends BlockBase implements BlockEntityProvider
     public VoxelShape getOutlineShape(BlockState blockState, BlockView blockView, BlockPos blockPosition, EntityContext entityContext) {
         return this.getShape(blockState);
     }
-    
+
+    @Override
+    public void neighborUpdate(BlockState blockState, World world, BlockPos blockPosition, Block block, BlockPos neighborPosition, boolean unknown) {
+       super.neighborUpdate(blockState, world, blockPosition, block, neighborPosition, unknown);
+       ModelHandler.update(world, blockPosition, BlockAction.BLOCK_ATTACH, BlockType.CONNECTOR);
+    }
+
     @Override
     public void onPlaced(World world, BlockPos blockPosition, BlockState blockState, LivingEntity livingEntity, ItemStack itemStack) {
         super.onPlaced(world, blockPosition, blockState, livingEntity, itemStack);

@@ -15,7 +15,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Tickable;
 import net.minecraft.util.math.BlockPos;
@@ -49,6 +48,29 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
 
     public ConnectorInventory blockInventory = new ConnectorInventory();
 
+
+    class ConnectorInventory extends BasicInventory implements SidedInventory {
+        public ConnectorInventory() {
+            super(6);
+        }
+
+        public int getInvMaxStackAmount() {
+            return 1;
+        }
+
+        public int[] getInvAvailableSlots(Direction direction_1) {
+            return new int[]{0, 1, 2, 3, 4, 5};
+        }   
+
+        public boolean canInsertInvStack(int int_1, ItemStack itemStack_1, @Nullable Direction direction_1) {
+            return false;
+        }
+
+        public boolean canExtractInvStack(int int_1, ItemStack itemStack_1, Direction direction_1) {
+            return false;
+        }
+    }
+
     public BlockTubeConnectorEntity() {
         super(EntityRegistry.TUBE_CONNECTOR_ENTITY);
 
@@ -75,7 +97,7 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
 
         networkHolder = new NetworkHolder();
     }
-    
+
     @Override
     public CompoundTag toTag(CompoundTag blockTag) {
         for (Tuple<Direction, Item> tuple : this.connectorFilters) {
@@ -130,28 +152,6 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
             this.setMode(tuple.getFirst(), BlockMode.fromString(blockTag.getString(tuple.getFirst() + "_mode")));
         }
         super.fromTag(blockTag);
-    }
-
-    class ConnectorInventory extends BasicInventory implements SidedInventory {
-        public ConnectorInventory() {
-            super(6);
-        }
-
-        public int getInvMaxStackAmount() {
-            return 1;
-        }
-
-        public int[] getInvAvailableSlots(Direction direction_1) {
-            return new int[]{0, 1, 2, 3, 4, 5};
-        }   
-
-        public boolean canInsertInvStack(int int_1, ItemStack itemStack_1, @Nullable Direction direction_1) {
-            return false;
-        }
-
-        public boolean canExtractInvStack(int int_1, ItemStack itemStack_1, Direction direction_1) {
-            return false;
-        }
     }
 
     public SidedInventory getInventory(BlockState state, IWorld world, BlockPos pos) {
@@ -212,7 +212,7 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
         }
     }
 
-    public static Direction getDirectionTranslated(Integer translateBuffer) {
+    public static Direction getInterfaceDirection(Integer translateBuffer) {
         if (translateBuffer instanceof Integer) {
             Integer integer = (Integer)translateBuffer;
             switch (integer) {
@@ -233,7 +233,7 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
         return null;
     }
 
-    public static Integer getIntegerTranslated(Direction translateBuffer) {
+    public static Integer getInterfaceInteger(Direction translateBuffer) {
         switch (translateBuffer) {
             case NORTH:
                 return 0;
@@ -254,7 +254,7 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
 
     public void updateWildcards() {
         for (Tuple<Direction, Item> tuple : this.connectorFilters) {
-            Item filterItem = blockInventory.getInvStack(getIntegerTranslated(tuple.getFirst())).getItem();
+            Item filterItem = blockInventory.getInvStack(getInterfaceInteger(tuple.getFirst())).getItem();
             tuple.setSecond(filterItem);
             if (filterItem != Items.AIR) {
                 setWildcard(tuple.getFirst(), false);
@@ -267,8 +267,6 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
 
     public void clear() {
         this.networkHolder.connectorList.clear();
-        this.inputInventories.clear();
-        this.outputInventories.clear();
     }
 
     public void tick() {
@@ -281,14 +279,13 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
         --ticksRemaining;
         
         if (!initialUpdate) {
-            initialUpdate = true;
-
             for (Tuple<Direction, Item> tuple : this.connectorFilters) {
-                this.blockInventory.setInvStack(BlockTubeConnectorEntity.getIntegerTranslated(tuple.getFirst()), new ItemStack(tuple.getSecond()));
+                this.blockInventory.setInvStack(BlockTubeConnectorEntity.getInterfaceInteger(tuple.getFirst()), new ItemStack(tuple.getSecond()));
             }
     
-
             NetworkHandler.updateNetwork(this.getPos(), this.getWorld());
+
+            initialUpdate = true;
         }
 
         this.updateWildcards();
@@ -300,33 +297,29 @@ public class BlockTubeConnectorEntity extends BlockEntity implements Tickable, I
         for (Tuple<Direction, BlockMode> tuple : this.connectorModes) {
             if (tuple.getSecond() == BlockMode.REQUESTER && ticksRemaining <= 0 && !this.world.isClient) {
                 this.ticksRemaining = ticksBase;
-                this.inputInventories.clear();
-                this.outputInventories.clear();
-                inputInventories = InventoryHandler.getInput(networkHolder, this.getPos(), world, true);
-                outputInventories = InventoryHandler.getOutput(this.getPos(), world, true);
+                this.inputInventories = InventoryHandler.getInput(networkHolder, this.getPos(), world, true);
+                this.outputInventories = InventoryHandler.getOutput(this.getPos(), world, true);
                 if (outputInventories != null && inputInventories != null) {
                     Collections.shuffle(inputInventories);
                     Collections.shuffle(outputInventories);
                     for (InventoryHolder inputInventory : inputInventories) {
-                        if (inputInventory != null && outputInventories != null) {
-                            for (InventoryHolder outputInventory : outputInventories) {
-                                int[] availableInputSlots = InventoryHandler.getAvailableSlotList(inputInventory, world).toArray();
-                                int[] availableOutputSlots = InventoryHandler.getAvailableSlotList(outputInventory, world).toArray();
-                                for (Integer inputSlot : availableInputSlots) {
-                                    if (InventoryHandler.canExtract(inputInventory.getInventory(), inputSlot, this.getFilter(tuple.getFirst())) && !this.getWildcard(tuple.getFirst())) {
-                                        for (Integer outputSlot : availableOutputSlots) {
-                                            if (InventoryHandler.canInsert(outputInventory.getInventory(), outputSlot, this.getFilter(inputInventory.getAccessDirection()))) {
-                                                InventoryHandler.makeTransfer(inputInventory.getInventory(), outputInventory.getInventory(), inputSlot, outputSlot, getFilter(inputInventory.getAccessDirection()), outputInventory.getInventory().getInvStack(outputSlot).isEmpty());
-                                                return;
-                                            }
+                        for (InventoryHolder outputInventory : outputInventories) {
+                            int[] availableInputSlots = InventoryHandler.getAvailableSlotList(inputInventory, world).toArray();
+                            int[] availableOutputSlots = InventoryHandler.getAvailableSlotList(outputInventory, world).toArray();
+                            for (Integer inputSlot : availableInputSlots) {
+                                if (InventoryHandler.canExtract(inputInventory.getInventory(), inputSlot, this.getFilter(tuple.getFirst())) && !this.getWildcard(tuple.getFirst())) {
+                                    for (Integer outputSlot : availableOutputSlots) {
+                                        if (InventoryHandler.canInsert(outputInventory.getInventory(), outputSlot, this.getFilter(inputInventory.getAccessDirection()))) {
+                                            InventoryHandler.makeTransfer(inputInventory.getInventory(), outputInventory.getInventory(), inputSlot, outputSlot, getFilter(inputInventory.getAccessDirection()), outputInventory.getInventory().getInvStack(outputSlot).isEmpty());
+                                            return;
                                         }
                                     }
-                                    else if (InventoryHandler.canExtractWildcard(inputInventory, inputSlot) && this.getWildcard(tuple.getFirst())) {
-                                        for (Integer outputSlot : availableOutputSlots) {
-                                            if (InventoryHandler.canInsertWildcard(outputInventory.getInventory(), outputSlot, inputInventory.getInventory().getInvStack(inputSlot))) {
-                                                InventoryHandler.makeTransfer(inputInventory.getInventory(), outputInventory.getInventory(), inputSlot, outputSlot, inputInventory.getInventory().getInvStack(inputSlot).getItem(), outputInventory.getInventory().getInvStack(outputSlot).isEmpty());
-                                                return;
-                                            }
+                                }
+                                else if (InventoryHandler.canExtractWildcard(inputInventory, inputSlot) && this.getWildcard(tuple.getFirst())) {
+                                    for (Integer outputSlot : availableOutputSlots) {
+                                        if (InventoryHandler.canInsertWildcard(outputInventory.getInventory(), outputSlot, inputInventory.getInventory().getInvStack(inputSlot))) {
+                                            InventoryHandler.makeTransfer(inputInventory.getInventory(), outputInventory.getInventory(), inputSlot, outputSlot, inputInventory.getInventory().getInvStack(inputSlot).getItem(), outputInventory.getInventory().getInvStack(outputSlot).isEmpty());
+                                            return;
                                         }
                                     }
                                 }

@@ -3,7 +3,6 @@ package tubular.registry;
 import net.fabricmc.fabric.api.container.ContainerProviderRegistry;
 import net.minecraft.container.BlockContext;
 import net.minecraft.util.Identifier;
-
 import tubular.screen.BlockConnectorScreenController;
 
 public class ScreenServerRegistry {

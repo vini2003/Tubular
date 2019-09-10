@@ -4,7 +4,6 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-
 import tubular.block.BlockBase;
 import tubular.inventory.InventoryHandler;
 import tubular.registry.BlockRegistry;
@@ -41,6 +40,14 @@ public class ModelHandler {
             for (Direction offsetDirection : Iterator.getDirList()) {
                 if (world.getBlockState(blockPosition.offset(offsetDirection)).getBlock() == BlockRegistry.TUBE_CONNECTOR) {
                     world.setBlockState(blockPosition.offset(offsetDirection), world.getBlockState(blockPosition.offset(offsetDirection)).with(BooleanProperty.of(offsetDirection.getOpposite().asString()), false));
+                }
+            }
+        } else if (blockAction == BlockAction.BLOCK_ATTACH && blockType == BlockType.CONNECTOR) {
+            for (Direction offsetDirection : Iterator.getDirList()) {
+                if (InventoryHandler.hasInventoryData(world, blockPosition.offset(offsetDirection))) {
+                    world.setBlockState(blockPosition, world.getBlockState(blockPosition).with(BooleanProperty.of("connected_" + offsetDirection.asString()), true));
+                } else {
+                    world.setBlockState(blockPosition, world.getBlockState(blockPosition).with(BooleanProperty.of("connected_" + offsetDirection.asString()), false));
                 }
             }
         }

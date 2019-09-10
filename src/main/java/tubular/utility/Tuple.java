@@ -1,8 +1,8 @@
 package tubular.utility;
 
 public class Tuple<X, Y> {
-    public X first;
-    public Y second;
+    private X first;
+    private Y second;
     
     public Tuple(X x, Y y) {
         this.first = x;

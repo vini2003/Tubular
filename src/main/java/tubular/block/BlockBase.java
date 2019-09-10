@@ -3,7 +3,6 @@ package tubular.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderLayer;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FacingBlock;
 import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;

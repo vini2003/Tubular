@@ -3,7 +3,6 @@ package tubular.registry;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-
 import tubular.entity.BlockTubeConnectorEntity;
 
 public class EntityRegistry {
